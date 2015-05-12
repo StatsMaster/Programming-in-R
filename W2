@@ -1,0 +1,308 @@
+
+# Programming in R, Week 2
+
+# Control Structures in R
+
+# the if-then-else  structure
+if(x>3){y <- 10} else {y <- 0}
+# or
+y <-if  (x>3){10} else {0}
+
+# the loop structure, for
+
+for(i in 10) {print (i)}
+
+# given the character vector x, here are three different ways to run the loop
+
+x <- c("a", "b", "c", "d")
+
+for(i in 1:4) {print(x[i])}
+
+for(i in seq_along(x)) {print x[i]}
+
+for(letter in x) {print (letter)}
+
+for(i in 1:4) print(x[i])
+
+# nested loops
+
+x <- matrix(1:6, 2, 3)
+
+for(i in seq_len(nrow(x))) {for(j in seq_len(ncol(x))) {print(x[i,j])}}
+
+# be careful, nesting below the 2 or 3 levels can be hard to read or understand
+
+#next, while loops
+# while loops begin by testing a condition.
+# if the condition is true then, they execute the loop body.
+# Once the loop body is exectued, the condition is tested again, and so forth
+
+cnt <- 0 
+while(cnt < 10){print(cnt) cnt <- cnt+1}
+
+
+# while loop example, and a random walk example 
+# random using the random binomial rbinom
+# 
+
+z <- 5 
+
+while(z >= 3 && z <= 10) {
+        print(z) 
+        coin <- rbinom(1, 1, 0.5)  
+        
+        if (coin == 1) {## random walk
+              z <- z +1
+              
+        } else { z <- z-1}
+}
+
+# repeat, the iniation of an infinate loop, to stop a repeat loop you must us a BREAK!
+# note this below example will not work because computeEstimate() is not a function
+# it's typically better to use a hard stop rather than a repeat control
+
+x0 <- 1
+tol <- le-8
+
+repeat { x1 <- computeEstimate() 
+          if(abs(x1 -x0) <tol) {break} 
+          else {x0 <- x1}
+  }
+
+
+# next, return :: used in any looping context to skip an iteration
+
+for(i in 1:100) { 
+        if (i <=20) {
+            ## skip the first 20 iterations
+            next
+        }
+        ## maybe insert something here
+}
+
+##
+### Writting Functions
+##
+
+# function ex1: add two numbers together
+
+add2 <- function(x, y) {x+y}
+add2(3,5)
+
+# function ex2: take a vector of #'s and return a subset of the vector
+
+above10 <- function(x) { 
+        use <- x >10
+        x[use]
+}
+
+# function ex3: let's make the above function more generalized
+
+above <- function(x, n){
+        use <- x > n
+        x[use]  
+}
+
+x <- 1:20
+above(x,12)
+
+# function ex4: let's make the above function more generalized, but keep a default argument
+
+above_v2 <- function(x, n=10){
+  use <- x > n
+  x[use]  
+}
+
+above_v2(x)
+
+
+# function ex5: a function to calculate a col mean
+
+colmean <- function(y){
+        nc <- ncol(y)
+        means <- numeric(nc)
+        for (i in 1:nc ) {
+                means[i] <- mean(y[, i])
+        }
+        means
+}
+
+colmean(airquality)
+
+# function ex5: a function to calculate a col mean, and remove null values
+
+colmean_v2 <- function(y, removeNA= TRUE){
+  nc <- ncol(y)
+  means <- numeric(nc)
+  for (i in 1:nc ) {
+    means[i] <- mean(y[, i], na.rm = removeNA)
+  }
+  means
+}
+
+colmean_v2(airquality)
+
+# or false, and leave the NA's
+
+colmean_v2(airquality,removeNA=FALSE)
+
+# ###
+# Functions!
+# ###
+
+# functions are stored a first class objects in R
+# meaning you can treat functions pretty much like other objects
+# functions have named arguments
+
+# R functions can be matched positionally or by name
+
+# example running the stadard dev function on the 100 rows random normal data
+
+mydata <- rnorm(100)
+
+sd(mydata)
+sd(x = mydata)
+sd(x = mydata, na.rm=FALSE)
+sd(na.rm=FALSE, x = mydata)
+sd(na.rm=FALSE, mydata)
+
+# let's take a look at the linear model function
+
+args(lm)
+
+lm(data=mydata, y-x, model = FALSE, 1:100)
+
+# it's typicall better to call the arguments in order
+lm(y-x, mydata, 1:100,  model = FALSE)
+
+# symbol binding // how does it know how to call the right function?
+
+# well, R search for what the named is assigned as currently::
+# 1.) Search the global enviroment for a symbol name matching the one requested
+# 2.) Search the names spaces  of each packages on the search list
+# the search list is:
+search()
+
+# the order of the packages loading determines the search order
+
+# The Scoping Rules
+# 1.) Determine how a values is bound to a free variable
+# 2.) R use lexical scoping. A common alt is dynamic scoring.
+# Lexical scoping means, the values of the free variables are search for in the enviroment in which the function was defined.
+
+# Let's take a look at lexical scoping, this function can return another function as it's value
+make.power <- function(n) {
+          pow <- function(x) {
+                x^n            
+          }
+          pow  
+}
+
+cube <- make.power(3)
+square <- make.power(2)
+
+cube(3)
+square(3)
+
+# Coding Standards in R
+
+# 1.) Use a regular text editor
+# 2.) Indentation for functions and if/then 4 space to 8 spaces
+# 3.) Column length 80 columns
+# 4.) Limit the length of your functions
+
+##
+# Dates and Times / secs or days from 1970
+##
+
+x <- as.Date("1970-01-01")
+x
+unclass(x)
+
+unclass(as.Date("1970-01-02"))
+
+x <- Sys.time()
+x
+
+plt <- as.POSIXlt(x)
+names(unclass(plt))
+
+plt$sec
+
+# looking at POSIXct format
+
+x <- Sys.time()
+x
+unclass(x)
+
+# Times in R,
+# Finally, there is the strptime function in case your dates are written in a different format
+
+datestring <- c("January 10, 2012 10:40", "December 9, 2011 9:10")
+x <- strptime(datestring, "%B %d, %Y %H:%M")
+x
+
+class(x)
+
+##
+# Scoping rules optimzation
+##
+
+# Quiz2 Q1
+
+cube <- function(x, n) {x^3}
+cube(3)
+
+# Quiz2 Q2
+
+x <- 1:10
+x
+
+if(x > 5) {x <- 0 }
+
+if(x>3){y <- 10} else {y <- 0}
+
+
+y <-if  (x>3){10} else {0}
+
+
+f <- function(x) {
+  g <- function(y) {
+    y + z
+  }
+  z <- 4
+  x + g(x)
+}
+
+z <- 10
+f(3)
+
+
+x <- 5
+y <- if(x < 3) {
+  NA
+} else {
+  10
+}
+y
+
+#Q2, Q5
+
+h <- function(x, y = NULL, d = 3L) {
+  z <- cbind(x, d)
+  if(!is.null(y))
+    z <- z + y
+  else
+    z <- z + f
+  g <- x + y / z
+  if(d == 3L)
+    return(g)
+  g <- g + 10
+  g
+}
+
+#above, f is the free variable since it is not a parameter and it is not defind in the function FREEDOM!
+
+
+
+
